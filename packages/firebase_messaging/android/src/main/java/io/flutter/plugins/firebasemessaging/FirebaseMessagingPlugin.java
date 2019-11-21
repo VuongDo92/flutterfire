@@ -89,6 +89,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     Map<String, Object> content = new HashMap<>();
     content.put("data", message.getData());
 
+    // TODO: get notification from data, mustn't payload notification from server-side
     RemoteMessage.Notification notification = message.getNotification();
 
     Map<String, Object> notificationMap = new HashMap<>();
