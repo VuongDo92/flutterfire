@@ -8,43 +8,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:275495514295:android:cc07b137c9d0f7e2dd1d32",
-        "android_client_info": {
-          "package_name": "com.example.flutter_firebase_push"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "275495514295-v660opmfgdauauha9k5df81rit5eaak4.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.flutter_firebase_push",
-            "certificate_hash": "1594559ef4a6d7929d332db3b81cf1ad86e296e6"
-          }
-        },
-        {
-          "client_id": "275495514295-sul6jof4mv911fhgg8bfag2cqena6met.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCEH9pJpQ0TpDU5oZBo5gObQsQmY1U1lN0"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "275495514295-sul6jof4mv911fhgg8bfag2cqena6met.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:275495514295:android:42c381ee30cfee0d",
         "android_client_info": {
           "package_name": "com.glob.demoandroid"
@@ -125,6 +88,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "275495514295-iop8lcc8qn0u84kln4t36pi2bmes4g3r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.flutter.plugins.firebasemessagingexample",
+            "certificate_hash": "1594559ef4a6d7929d332db3b81cf1ad86e296e6"
+          }
+        },
         {
           "client_id": "275495514295-rg8vkcuup2jmmukf8kfr36bh77lq10gq.apps.googleusercontent.com",
           "client_type": 1,

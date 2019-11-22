@@ -12,6 +12,8 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Process;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -84,7 +86,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    * @param remoteMessage Object representing the message received from Firebase Cloud Messaging.
    */
   @Override
-  public void onMessageReceived(final RemoteMessage remoteMessage) {
+  public void onMessageReceived(@NonNull final RemoteMessage remoteMessage) {
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
     if (isApplicationForeground(this)) {
@@ -273,12 +275,17 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     }
     args.put("handle", backgroundMessageHandle);
 
-    if (remoteMessage.getData() != null) {
-      messageData.put("data", remoteMessage.getData());
-    }
-    if (remoteMessage.getNotification() != null) {
-      messageData.put("notification", remoteMessage.getNotification());
-    }
+    messageData.put("data", remoteMessage.getData());
+
+    Map<String, Object> notificationMap = new HashMap<>();
+
+    String title = remoteMessage.getData().get("title");
+    notificationMap.put("title", title);
+
+    String body = remoteMessage.getData().get("body");
+    notificationMap.put("body", body);
+
+    messageData.put("notification", notificationMap);
 
     args.put("message", messageData);
 

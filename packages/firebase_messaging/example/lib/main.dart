@@ -3,22 +3,64 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-
+import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rxdart/subjects.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+// Streams are created so that app can respond to notification-related events since the plugin is initialised in the `main` function
+final BehaviorSubject<ReceivedNotification> didReceiveLocalNotificationSubject =
+    BehaviorSubject<ReceivedNotification>();
+
+final BehaviorSubject<String> selectNotificationSubject =
+    BehaviorSubject<String>();
+
+class ReceivedNotification {
+  final int id;
+  final String title;
+  final String body;
+  final String payload;
+
+  ReceivedNotification(
+      {@required this.id,
+      @required this.title,
+      @required this.body,
+      @required this.payload});
+}
+
+/// Schedules a notification that specifies a different icon, sound and vibration pattern
+Future<void> _scheduleNotification(Map<String, dynamic> message) async {
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  var initializationSettingsAndroid =
+  AndroidInitializationSettings('app_icon');
+  var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: (int id, String title, String body, String payload) {
+        return;
+      });
+  var initializationSettings = InitializationSettings(
+      initializationSettingsAndroid, initializationSettingsIOS);
+  flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: (String payload) {
+        return;
+      });
+  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your channel id', 'your channel name', 'your channel description',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+  var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+  var platformChannelSpecifics = NotificationDetails(
+      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(0, message['data']['title'],
+      message['data']['body'], platformChannelSpecifics,
+      payload: 'item x');
+}
+
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
   print(":::TAG::: myBackgroundMessageHandler: $message");
-
-  if (message.containsKey('data')) {
-    // Handle data message
-    final dynamic data = message['data'];
-  }
-
-  if (message.containsKey('notification')) {
-    // Handle notification message
-    final dynamic notification = message['notification'];
-  }
+  await _scheduleNotification(message);
 
   // Or do other work.
 }
@@ -151,13 +193,74 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
     }
   }
 
+  Future<void> onDidReceiveLocalNotification(
+      int id, String title, String body, String payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: Text('Ok'),
+            onPressed: () async {
+              Navigator.of(context, rootNavigator: true).pop();
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SecondScreen(payload),
+                ),
+              );
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Future<void> onSelectNotification(String payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: ' + payload);
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SecondScreen(payload)),
+    );
+  }
+
+  Future<void> _showNotification(Map<String, dynamic> message) async {
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['data']['title'],
+        message['data']['body'], platformChannelSpecifics,
+        payload: 'item x');
+  }
+
   @override
   void initState() {
     super.initState();
+
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = IOSInitializationSettings(
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print(":::TAG::: onMessage: $message");
-        _showItemDialog(message);
+//        _showItemDialog(message);
+        await _showNotification(message);
       },
       onBackgroundMessage: myBackgroundMessageHandler,
       onLaunch: (Map<String, dynamic> message) async {
@@ -166,7 +269,7 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
       },
       onResume: (Map<String, dynamic> message) async {
         print("onResume: $message");
-        _navigateToItemDetail(message);
+//        _navigateToItemDetail(message);
       },
     );
     _firebaseMessaging.requestNotificationPermissions(
@@ -251,7 +354,60 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
   }
 }
 
-void main() {
+class SecondScreen extends StatefulWidget {
+  final String payload;
+  SecondScreen(this.payload);
+  @override
+  State<StatefulWidget> createState() => SecondScreenState();
+}
+
+class SecondScreenState extends State<SecondScreen> {
+  String _payload;
+  @override
+  void initState() {
+    super.initState();
+    _payload = widget.payload;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Second Screen with payload: " + _payload),
+      ),
+      body: Center(
+        child: RaisedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text('Go back!'),
+        ),
+      ),
+    );
+  }
+}
+
+void main() async {
+//  WidgetsFlutterBinding.ensureInitialized();
+//
+//  var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+//  var initializationSettingsIOS = IOSInitializationSettings(
+//      onDidReceiveLocalNotification:
+//          (int id, String title, String body, String payload) async {
+//        didReceiveLocalNotificationSubject.add(ReceivedNotification(
+//            id: id, title: title, body: body, payload: payload));
+//      });
+//  var initializationSettings = InitializationSettings(
+//      initializationSettingsAndroid, initializationSettingsIOS);
+//  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+//      onSelectNotification: (String payload) async {
+//        if (payload != null) {
+//          debugPrint('notification payload: ' + payload);
+//        }
+//        selectNotificationSubject.add(payload);
+//      });
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
   runApp(
     MaterialApp(
       home: PushMessagingExample(),
