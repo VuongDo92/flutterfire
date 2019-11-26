@@ -9,7 +9,8 @@ dependencies:
     path: ../
   firebase_core: ^0.4.0
   flutter_local_notifications:
-    path: ../../../../flutter_local_notifications
+    git:
+      url: https://github.com/VuongDo92/flutter_local_notifications.git
   rxdart: ^0.22.6
 
 dev_dependencies:

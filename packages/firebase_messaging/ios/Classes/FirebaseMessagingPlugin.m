@@ -166,10 +166,24 @@ static NSObject<FlutterPluginRegistrar> *_registrar;
 #endif
 
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    printf("didReceiveRemoteNotification \n\n");
+    printf("userInfo \n\n");
+    
+    printf("_resumingFromBackground = %d", _resumingFromBackground);
+    
   if (_resumingFromBackground) {
     [_channel invokeMethod:@"onResume" arguments:userInfo];
   } else {
-    [_channel invokeMethod:@"onMessage" arguments:userInfo];
+      
+      
+      NSDictionary *noti = @{ @"title": userInfo[@"title"],
+                               @"body": userInfo[@"body"]};
+       
+       NSDictionary *appData = @{ @"notification": noti,
+                                  @"data": userInfo};
+      
+      
+    [_channel invokeMethod:@"onMessage" arguments:appData];
   }
 }
 
@@ -242,7 +256,19 @@ static NSObject<FlutterPluginRegistrar> *_registrar;
 
 - (void)messaging:(FIRMessaging *)messaging
     didReceiveMessage:(FIRMessagingRemoteMessage *)remoteMessage {
-  [_channel invokeMethod:@"onMessage" arguments:remoteMessage.appData];
+    printf("messaging \n\n");
+    printf("remoteMessage.appData \n\n");
+    
+    
+    NSDictionary *noti = @{ @"title": remoteMessage.appData[@"title"],
+                            @"body": remoteMessage.appData[@"body"]};
+    
+    NSDictionary *appData = @{ @"notification": noti,
+                               @"data": remoteMessage.appData};
+    
+    
+    
+  [_channel invokeMethod:@"onMessage" arguments:appData];
 }
 
 @end

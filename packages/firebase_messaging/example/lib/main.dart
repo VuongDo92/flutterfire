@@ -3,14 +3,26 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+void main() async {
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  runApp(
+    MaterialApp(
+      home: PushMessagingExample(),
+    ),
+  );
+}
 
 // Streams are created so that app can respond to notification-related events since the plugin is initialised in the `main` function
 final BehaviorSubject<ReceivedNotification> didReceiveLocalNotificationSubject =
@@ -33,7 +45,7 @@ class ReceivedNotification {
 }
 
 /// Schedules a notification that specifies a different icon, sound and vibration pattern
-Future<void> _scheduleNotification(Map<String, dynamic> message) async {
+Future<void> _showBackgroundNotification(Map<String, dynamic> message) async {
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   var initializationSettingsAndroid =
   AndroidInitializationSettings('app_icon');
@@ -60,9 +72,7 @@ Future<void> _scheduleNotification(Map<String, dynamic> message) async {
 
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
   print(":::TAG::: myBackgroundMessageHandler: $message");
-  await _scheduleNotification(message);
-
-  // Or do other work.
+  await _showBackgroundNotification(message);
 }
 
 final Map<String, Item> _items = <String, Item>{};
@@ -161,6 +171,7 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
           child: const Text('CLOSE'),
           onPressed: () {
             Navigator.pop(context, false);
+            Navigator.pop(context, false);
           },
         ),
         FlatButton(
@@ -243,6 +254,8 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
         payload: 'item x');
   }
 
+  var platform = MethodChannel('crossingthestreams.io/resourceResolver');
+
   @override
   void initState() {
     super.initState();
@@ -262,13 +275,13 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
 //        _showItemDialog(message);
         await _showNotification(message);
       },
-      onBackgroundMessage: myBackgroundMessageHandler,
+      onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
       onLaunch: (Map<String, dynamic> message) async {
         print(":::TAG::: onLaunch: $message");
         _navigateToItemDetail(message);
       },
       onResume: (Map<String, dynamic> message) async {
-        print("onResume: $message");
+        print(":::TAG::: onResume: $message");
 //        _navigateToItemDetail(message);
       },
     );
@@ -276,7 +289,7 @@ class _PushMessagingExampleState extends State<PushMessagingExample> {
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
         .listen((IosNotificationSettings settings) {
-      print("Settings registered: $settings");
+      print(":::TAG::: Settings registered: $settings");
     });
     _firebaseMessaging.getToken().then((String token) {
       assert(token != null);
@@ -385,32 +398,4 @@ class SecondScreenState extends State<SecondScreen> {
       ),
     );
   }
-}
-
-void main() async {
-//  WidgetsFlutterBinding.ensureInitialized();
-//
-//  var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-//  var initializationSettingsIOS = IOSInitializationSettings(
-//      onDidReceiveLocalNotification:
-//          (int id, String title, String body, String payload) async {
-//        didReceiveLocalNotificationSubject.add(ReceivedNotification(
-//            id: id, title: title, body: body, payload: payload));
-//      });
-//  var initializationSettings = InitializationSettings(
-//      initializationSettingsAndroid, initializationSettingsIOS);
-//  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-//      onSelectNotification: (String payload) async {
-//        if (payload != null) {
-//          debugPrint('notification payload: ' + payload);
-//        }
-//        selectNotificationSubject.add(payload);
-//      });
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  runApp(
-    MaterialApp(
-      home: PushMessagingExample(),
-    ),
-  );
 }
