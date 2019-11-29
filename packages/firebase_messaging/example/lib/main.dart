@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,16 +11,22 @@ import 'package:rxdart/subjects.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin= FlutterLocalNotificationsPlugin();
 
-void main() async {
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
+  print(":::TAG::: myBackgroundMessageHandler: $message");
+  await _showBackgroundNotification(message);
+}
 
-  runApp(
-    MaterialApp(
-      home: PushMessagingExample(),
-    ),
-  );
+void main()  {
+  runZoned(() {
+    runApp(
+      MaterialApp(
+        home: PushMessagingExample(),
+      ),
+    );
+  });
+
 }
 
 // Streams are created so that app can respond to notification-related events since the plugin is initialised in the `main` function
@@ -70,10 +75,7 @@ Future<void> _showBackgroundNotification(Map<String, dynamic> message) async {
       payload: 'item x');
 }
 
-Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
-  print(":::TAG::: myBackgroundMessageHandler: $message");
-  await _showBackgroundNotification(message);
-}
+
 
 final Map<String, Item> _items = <String, Item>{};
 Item _itemForMessage(Map<String, dynamic> message) {
