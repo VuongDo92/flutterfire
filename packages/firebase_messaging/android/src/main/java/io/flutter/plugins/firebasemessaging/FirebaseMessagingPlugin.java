@@ -133,7 +133,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       FlutterFirebaseMessagingService.setBackgroundSetupHandle(
           this.registrar.context(), setupCallbackHandle);
       FlutterFirebaseMessagingService.startBackgroundIsolate(
-          this.registrar.context(), setupCallbackHandle);
+              this.registrar.context(), setupCallbackHandle);
       FlutterFirebaseMessagingService.setBackgroundMessageHandle(
           this.registrar.context(), backgroundMessageHandle);
       result.success(true);

@@ -141,6 +141,9 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    *     handling on the dart side.
    */
   public static void startBackgroundIsolate(Context context, long callbackHandle) {
+    if(context == null) {
+      context = backgroundContext;
+    }
     FlutterMain.ensureInitializationComplete(context, null);
     String appBundlePath = FlutterMain.findAppBundlePath();
     FlutterCallbackInformation flutterCallback =

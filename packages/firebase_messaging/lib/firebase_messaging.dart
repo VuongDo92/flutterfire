@@ -111,7 +111,9 @@ class FirebaseMessaging {
     _onLaunch = onLaunch;
     _onResume = onResume;
     _channel.setMethodCallHandler(_handleMethod);
+
     _channel.invokeMethod<void>('configure');
+
     if (onBackgroundMessage != null) {
       _onBackgroundMessage = onBackgroundMessage;
       final CallbackHandle backgroundSetupHandle =
