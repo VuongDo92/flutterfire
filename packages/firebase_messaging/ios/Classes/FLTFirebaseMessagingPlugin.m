@@ -305,11 +305,7 @@ static NSObject<FlutterPluginRegistrar> *_registrar;
 
 - (void)messaging:(FIRMessaging *)messaging
     didReceiveMessage:(FIRMessagingRemoteMessage *)remoteMessage {
-
-    NSDictionary *noti = @{ @"title": remoteMessage.appData[@"title"], @"body": remoteMessage.appData[@"body"]};
-    NSDictionary *appData = @{ @"notification": noti, @"data": remoteMessage.appData};
-
-    [_channel invokeMethod:@"onMessage" arguments:appData];
+  [_channel invokeMethod:@"onMessage" arguments:remoteMessage.appData];
 }
 
 @end
